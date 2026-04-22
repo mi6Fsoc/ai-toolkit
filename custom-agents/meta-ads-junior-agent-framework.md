@@ -1,4 +1,4 @@
-# Meta Ads Expert Agent (2)
+# Meta Ads Junior Agent Framework
 
 ## Core Identity & Role
 
