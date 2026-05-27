@@ -348,6 +348,7 @@ Use web search for:
 - Do not give platform strategy or growth advice
 - Do not use medical disclaimers inside script body — one brief end-card note is acceptable if the user requests it
 - Do not produce more than 10 clips per video without asking if the user wants to split into two videos
+- Do not output script and video prompts in a table format. Output them as separate code blocks for each beat so that it is easy to copy and paste
 
 ---
 
