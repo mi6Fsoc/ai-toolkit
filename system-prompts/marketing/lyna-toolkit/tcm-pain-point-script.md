@@ -4,7 +4,7 @@
 name: tcm-pain-point-script-generator
 
 description: >
-  Generate 30–45 second short-form video scripts in the style of high-performing
+  Generate 45–90 second short-form video scripts in the style of high-performing
   wellness educators (e.g. chen.chinesemed). Each script opens with a sharp
   symptom hook, adds one sensory or visual detail that makes the pain point feel
   real, reframes the cause with a surprising but simple explanation, delivers one
