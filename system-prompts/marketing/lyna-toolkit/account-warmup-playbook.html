@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Account Warm-Up Playbook</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    /* ── TOKENS ── */
+    :root {
+      --bg:            #eef0f4;
+      --surface:       #ffffff;
+      --surface-alt:   #f4f5f8;
+      --border:        #c4c8d4;
+      --text:          #111827;
+      --text-sub:      #374151;
+      --text-label:    #4b5563;
+      --accent-blue:   #1d3fa6;
+      --accent-green:  #145e36;
+      --accent-orange: #9a3a00;
+      --accent-red:    #a81f1f;
+      --accent-purple: #4321a0;
+      --progress:      #1d3fa6;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 13px;
+      line-height: 1.75;
+      min-height: 100vh;
+    }
+
+    /* ── PROGRESS BAR ── */
+    #progress {
+      position: fixed; top: 0; left: 0;
+      height: 3px; background: var(--progress);
+      z-index: 999; transition: width 0.1s linear;
+    }
+
+    /* ── LAYOUT ── */
+    .wrapper {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 56px 32px 100px;
+    }
+
+    /* ── HEADER ── */
+    .doc-header {
+      border-bottom: 2px solid var(--border);
+      padding-bottom: 40px;
+      margin-bottom: 48px;
+    }
+
+    .doc-eyebrow {
+      display: flex; gap: 10px; align-items: center;
+      margin-bottom: 24px;
+    }
+
+    .pill {
+      font-size: 10px; font-weight: 600;
+      letter-spacing: 0.12em; text-transform: uppercase;
+      padding: 4px 10px; border-radius: 3px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text-label);
+    }
+
+    .pill-blue {
+      background: #dde6fa;
+      border-color: #9db4ef;
+      color: var(--accent-blue);
+    }
+
+    .doc-title {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: clamp(30px, 4.5vw, 52px);
+      color: var(--text);
+      letter-spacing: -0.025em;
+      line-height: 1.05;
+      margin-bottom: 16px;
+    }
+
+    .doc-title em {
+      font-style: normal;
+      color: var(--accent-blue);
+    }
+
+    .doc-sub {
+      color: var(--text-sub);
+      font-size: 12px;
+      max-width: 580px;
+      line-height: 1.85;
+    }
+
+    /* ── TOC ── */
+    .toc {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--accent-blue);
+      padding: 22px 26px;
+      margin-bottom: 56px;
+    }
+
+    .toc-label {
+      font-size: 10px; letter-spacing: 0.14em;
+      text-transform: uppercase; font-weight: 600;
+      color: var(--accent-blue); margin-bottom: 14px;
+    }
+
+    .toc ol {
+      list-style: none; counter-reset: toc;
+      display: grid; grid-template-columns: 1fr 1fr; gap: 5px 24px;
+    }
+
+    @media (max-width: 580px) { .toc ol { grid-template-columns: 1fr; } }
+
+    .toc li { counter-increment: toc; }
+
+    .toc a {
+      display: flex; align-items: baseline; gap: 8px;
+      color: var(--text-sub); text-decoration: none;
+      font-size: 12px; transition: color 0.15s;
+    }
+
+    .toc a::before {
+      content: counter(toc, decimal-leading-zero);
+      font-size: 10px; color: var(--text-label); min-width: 20px;
+    }
+
+    .toc a:hover { color: var(--accent-blue); }
+
+    /* ── SECTION HEADER ── */
+    .section { margin-bottom: 60px; }
+
+    .sec-head {
+      display: flex; align-items: center; gap: 14px;
+      padding-bottom: 14px; margin-bottom: 24px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .sec-num {
+      font-size: 10px; color: var(--text-label);
+      letter-spacing: 0.1em; min-width: 26px;
+    }
+
+    .sec-title {
+      font-family: 'Syne', sans-serif;
+      font-weight: 700; font-size: 17px;
+      color: var(--text); letter-spacing: -0.01em;
+      flex: 1;
+    }
+
+    .sec-badge {
+      font-size: 10px; letter-spacing: 0.1em;
+      text-transform: uppercase; padding: 3px 9px;
+      border-radius: 3px; border: 1px solid;
+      white-space: nowrap; font-weight: 600;
+    }
+
+    .badge-blue   { color: var(--accent-blue);   background: #dde6fa; border-color: #9db4ef; }
+    .badge-green  { color: var(--accent-green);  background: #d3edd9; border-color: #7dbd94; }
+    .badge-orange { color: var(--accent-orange); background: #fde8d5; border-color: #f0a870; }
+    .badge-red    { color: var(--accent-red);    background: #fad8d8; border-color: #e89090; }
+    .badge-purple { color: var(--accent-purple); background: #e3daf7; border-color: #a98de0; }
+
+    /* ── CALLOUT BOXES ── */
+    .callout {
+      padding: 18px 22px;
+      margin-bottom: 18px;
+      border: 1px solid;
+      border-left: 4px solid;
+    }
+
+    .callout-label {
+      font-size: 10px; letter-spacing: 0.12em;
+      text-transform: uppercase; font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .callout p {
+      font-size: 12px; color: var(--text-sub); line-height: 1.8;
+    }
+
+    .callout-blue   { background: #eef2fc; border-color: #9db4ef; }
+    .callout-blue .callout-label   { color: var(--accent-blue); }
+    .callout-green  { background: #eaf5ec; border-color: #7dbd94; }
+    .callout-green .callout-label  { color: var(--accent-green); }
+    .callout-orange { background: #fef3ea; border-color: #f0a870; }
+    .callout-orange .callout-label { color: var(--accent-orange); }
+    .callout-red    { background: #fef0f0; border-color: #e89090; }
+    .callout-red .callout-label    { color: var(--accent-red); }
+
+    /* ── WEEK TABLE ── */
+    .week-table { width: 100%; border-collapse: collapse; margin-bottom: 18px; }
+
+    .week-table tr { border-bottom: 1px solid var(--border); }
+    .week-table tr:last-child { border-bottom: none; }
+
+    .week-table td {
+      padding: 14px 16px;
+      vertical-align: top;
+      font-size: 12px;
+      color: var(--text-sub);
+      line-height: 1.75;
+    }
+
+    .week-table td:first-child {
+      width: 110px;
+      font-size: 10px; font-weight: 600;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--text-label);
+      background: var(--surface-alt);
+      border-right: 1px solid var(--border);
+    }
+
+    .week-table td:last-child { background: var(--surface); }
+
+    .week-table strong { color: var(--text); font-weight: 600; }
+
+    /* ── STEP LIST ── */
+    .step-list { list-style: none; }
+
+    .step-list li {
+      display: flex; gap: 14px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 12px; color: var(--text-sub); line-height: 1.75;
+    }
+
+    .step-list li:last-child { border-bottom: none; }
+
+    .step-arrow {
+      color: var(--text-label); min-width: 18px;
+      padding-top: 1px; font-size: 12px;
+    }
+
+    .step-list strong { color: var(--text); font-weight: 600; }
+
+    code {
+      background: var(--surface-alt);
+      border: 1px solid var(--border);
+      padding: 1px 6px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px; color: var(--accent-blue);
+      border-radius: 3px;
+    }
+
+    /* ── PLATFORM BLOCKS ── */
+    .platform-block {
+      border: 1px solid var(--border);
+      background: var(--surface);
+      margin-bottom: 18px;
+    }
+
+    .platform-head {
+      display: flex; align-items: center; gap: 12px;
+      padding: 14px 20px;
+      background: var(--surface-alt);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .platform-icon {
+      width: 30px; height: 30px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 10px; font-weight: 700;
+      font-family: 'Syne', sans-serif;
+      border: 1px solid var(--border);
+    }
+
+    .icon-tk { background: #e3daf7; color: var(--accent-purple); }
+    .icon-mt { background: #dde6fa; color: var(--accent-blue); }
+    .icon-yt { background: #fad8d8; color: var(--accent-red); }
+
+    .platform-name {
+      font-family: 'Syne', sans-serif;
+      font-weight: 700; font-size: 14px; color: var(--text);
+    }
+
+    .phase-grid { padding: 0; }
+
+    .phase-row {
+      display: grid; grid-template-columns: 110px 1fr;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .phase-row:last-child { border-bottom: none; }
+
+    .phase-label {
+      font-size: 10px; font-weight: 600;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      color: var(--text-label);
+      padding: 14px 16px;
+      background: var(--surface-alt);
+      border-right: 1px solid var(--border);
+    }
+
+    .phase-content {
+      padding: 14px 18px;
+      font-size: 12px; color: var(--text-sub); line-height: 1.75;
+    }
+
+    .phase-content strong { color: var(--text); font-weight: 600; }
+
+    /* ── WARN BOXES ── */
+    .warn-box {
+      background: #fef0f0;
+      border: 1px solid #e89090;
+      border-left: 4px solid var(--accent-red);
+      padding: 16px 20px 16px 48px;
+      margin-bottom: 12px;
+      position: relative;
+    }
+
+    .warn-box::before {
+      content: '⚠';
+      position: absolute; left: 16px; top: 15px;
+      color: var(--accent-red); font-size: 14px;
+    }
+
+    .warn-title {
+      font-weight: 600; color: var(--accent-red);
+      font-size: 12px; margin-bottom: 5px; letter-spacing: 0.02em;
+    }
+
+    .warn-body {
+      font-size: 12px; color: var(--text-sub); line-height: 1.78;
+    }
+
+    /* ── NICHE GRID ── */
+    .niche-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+    }
+    @media (max-width: 580px) { .niche-grid { grid-template-columns: 1fr; } }
+
+    .niche-card {
+      background: var(--surface); border: 1px solid var(--border);
+      padding: 18px 20px;
+    }
+
+    .niche-card-label {
+      font-size: 10px; letter-spacing: 0.12em;
+      text-transform: uppercase; font-weight: 600;
+      color: var(--accent-orange); margin-bottom: 10px;
+    }
+
+    .niche-card p { font-size: 12px; color: var(--text-sub); line-height: 1.8; }
+
+    /* ── META CARDS ── */
+    .meta-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+    @media (max-width: 580px) { .meta-row { grid-template-columns: 1fr; } }
+
+    .meta-card {
+      background: var(--surface); border: 1px solid var(--border); padding: 18px 20px;
+    }
+
+    .meta-card-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 13px; font-weight: 700;
+      color: var(--text); margin-bottom: 8px;
+    }
+
+    .meta-card p { font-size: 12px; color: var(--text-sub); line-height: 1.8; }
+
+    /* ── CHECKLIST ── */
+    .checklist { list-style: none; }
+
+    .checklist li {
+      display: flex; align-items: flex-start; gap: 12px;
+      padding: 12px 0; border-bottom: 1px solid var(--border);
+      font-size: 12px; color: var(--text-sub); line-height: 1.75;
+    }
+
+    .checklist li:last-child { border-bottom: none; }
+
+    .check-box {
+      width: 15px; height: 15px; flex-shrink: 0; margin-top: 3px;
+      border: 1.5px solid var(--border); border-radius: 2px;
+      background: var(--surface-alt);
+    }
+
+    .checklist strong { color: var(--text); font-weight: 600; }
+
+    /* ── FOOTER ── */
+    .doc-footer {
+      border-top: 1px solid var(--border);
+      padding-top: 28px; margin-top: 72px;
+      display: flex; justify-content: space-between;
+      font-size: 10px; letter-spacing: 0.08em;
+      color: var(--text-label);
+    }
+  </style>
+</head>
+<body>
+
+<div id="progress"></div>
+
+<div class="wrapper">
+
+  <!-- HEADER -->
+  <header class="doc-header">
+    <div class="doc-eyebrow">
+      <span class="pill pill-blue">OPS PLAYBOOK</span>
+      <span class="pill">v1.0</span>
+    </div>
+    <h1 class="doc-title">Account <em>Warm-Up</em><br>Master Playbook</h1>
+    <p class="doc-sub">A structured, step-by-step protocol for warming up email addresses and social media accounts — building sender reputation, avoiding platform flags, and establishing sustainable reach from zero.</p>
+  </header>
+
+  <!-- TOC -->
+  <nav class="toc">
+    <p class="toc-label">// Table of Contents</p>
+    <ol>
+      <li><a href="#email">Email Account Warm-Up</a></li>
+      <li><a href="#social">Social Media Warm-Up</a></li>
+      <li><a href="#platforms">Platform-Specific Schedules</a></li>
+      <li><a href="#niche">Women's Health Niche</a></li>
+      <li><a href="#flags">Critical Flags to Avoid</a></li>
+      <li><a href="#metadata">AI Metadata & File Hygiene</a></li>
+      <li><a href="#checklist">Daily Action Checklist</a></li>
+      <li><a href="#added">Additional Best Practices</a></li>
+    </ol>
+  </nav>
+
+
+  <!-- ─── 01 EMAIL ─── -->
+  <section class="section" id="email">
+    <div class="sec-head">
+      <span class="sec-num">01</span>
+      <h2 class="sec-title">Email Account Warm-Up</h2>
+      <span class="sec-badge badge-blue">Email</span>
+    </div>
+
+    <div class="callout callout-blue">
+      <p class="callout-label">// Why This Matters</p>
+      <p>Email providers (Google, Microsoft, Yahoo) apply reputation scoring to every new sending domain and address. Accounts that suddenly send bulk messages are automatically flagged, throttled, or blacklisted. Warming up builds a positive sender reputation gradually before any outreach begins.</p>
+    </div>
+
+    <table class="week-table">
+
+      <tr>
+        <td>Week 1</td>
+        <td>Send <strong>5–10 emails/day</strong> manually to real contacts — friends, colleagues, teammates. Write genuine, conversational messages, not templates. Ask recipients to <strong>reply and pull your emails out of spam</strong> if they land there. Every reply signals trusted sender status.</td>
+      </tr>
+      <tr>
+        <td>Week 2</td>
+        <td>Scale to <strong>15–20 emails/day.</strong> Introduce a warm-up tool (<code>Instantly</code>, <code>Lemlist</code>, <code>Mailreach</code>, or <code>Warmbox</code>) to supplement manual sends. These platforms automatically exchange emails within trusted inbox networks, generating positive engagement signals at scale.</td>
+      </tr>
+      <tr>
+        <td>Week 3–4</td>
+        <td>Increase by <strong>+5–10 emails/day each week,</strong> targeting 50–100/day by end of week 4. Monitor open rates (target above 40%) and reply rates (target above 15%). Keep spam complaint rate <strong>below 0.1%</strong> — Gmail penalises domains above this threshold.</td>
+      </tr>
+      <tr>
+        <td>Ongoing</td>
+        <td>Keep warm-up running in parallel with real outreach. Maintain a high positive engagement ratio: opens, replies, and "Mark as Important" actions all reinforce reputation. Never allow sudden volume spikes — always scale gradually.</td>
+      </tr>
+    </table>
+
+    <div class="callout callout-blue">
+      <p class="callout-label">// Additional Email Best Practices</p>
+      <ul class="step-list">
+        <li><span class="step-arrow">→</span><span><strong>Use a custom domain or subdomain.</strong> Never warm up a free Gmail/Outlook account for outreach. Use a domain you own, ideally a subdomain (e.g. <code>outreach.yourdomain.com</code>) to protect your root domain's reputation.</span></li>
+        <li><span class="step-arrow">→</span><span><strong>Avoid spam trigger words</strong> in subject lines during warm-up: "free," "guaranteed," "limited time," "click here," "act now."</span></li>
+        <li><span class="step-arrow">→</span><span><strong>Include a plain-text version</strong> of every HTML email. Spam filters penalise HTML-only messages with no plain-text alternative.</span></li>
+        <li><span class="step-arrow">→</span><span><strong>Maintain list hygiene.</strong> Remove bounces and unsubscribes immediately. A hard bounce rate above 2% is a serious red flag for all major providers.</span></li>
+      </ul>
+    </div>
+  </section>
+
+
+  <!-- ─── 02 SOCIAL ─── -->
+  <section class="section" id="social">
+    <div class="sec-head">
+      <span class="sec-num">02</span>
+      <h2 class="sec-title">Social Media Account Warm-Up</h2>
+      <span class="sec-badge badge-green">Social</span>
+    </div>
+
+    <div class="callout callout-green">
+      <p class="callout-label">// Why This Matters</p>
+      <p>Social platforms run behavioural ML models that score every account from the moment it's created. Sudden automation patterns — mass following, rapid DMs, copy-pasted messages — trigger automatic flags, shadow bans, or hard bans. Warming up builds a human-looking activity history before any outreach begins.</p>
+    </div>
+
+    <ul class="step-list">
+      <li><span class="step-arrow">01</span><span><strong>Complete the profile fully.</strong> Upload a real, natural-looking profile photo. Write a genuine bio. Verify your phone number. An incomplete profile is the first signal automated systems check.</span></li>
+      <li><span class="step-arrow">02</span><span><strong>Simulate human browsing.</strong> Spend 15 minutes daily scrolling, liking, and saving posts. Vary the time of day — humans don't log in at exactly the same time every day.</span></li>
+      <li><span class="step-arrow">03</span><span><strong>Post organic content first.</strong> Publish 3–5 genuine posts before sending any DMs or starting outreach. The account should look like it belongs to a real content creator, not a bot.</span></li>
+      <li><span class="step-arrow">04</span><span><strong>Restrict daily actions strictly in Week 1.</strong> Cap outbound DMs at 5–10/day, follows at 10–15/day, likes at 20–30/day. Stay well below each platform's hard limits.</span></li>
+      <li><span class="step-arrow">05</span><span><strong>Space out every action.</strong> Wait at least 2–3 minutes between individual actions (follows, likes, DMs). Automation tools firing 50 actions in 2 minutes are trivially detectable.</span></li>
+      <li><span class="step-arrow">06</span><span><strong>Personalise every message.</strong> Never copy-paste the same DM text across multiple sends. Use genuine variations that change meaningfully. Duplicate text detection is a core spam signal on all platforms.</span></li>
+      <li><span class="step-arrow">07</span><span><strong>Stagger account creation.</strong> Never create more than 2 accounts per day on the same platform. Creating multiple accounts from the same device in one session is an immediate flag — even with proxies.</span></li>
+      <li><span class="step-arrow">08</span><span><strong>Use a dedicated IP per account.</strong> If managing multiple accounts, each should have its own residential proxy or mobile data connection. Data centre proxies are frequently pre-flagged. Keep IPs within the same geographic region.</span></li>
+    </ul>
+  </section>
+
+
+  <!-- ─── 03 PLATFORMS ─── -->
+  <section class="section" id="platforms">
+    <div class="sec-head">
+      <span class="sec-num">03</span>
+      <h2 class="sec-title">Platform-Specific Warm-Up Schedules</h2>
+      <span class="sec-badge badge-purple">Platforms</span>
+    </div>
+
+    <!-- TikTok -->
+    <div class="platform-block">
+      <div class="platform-head">
+        <div class="platform-icon icon-tk">TK</div>
+        <span class="platform-name">TikTok</span>
+      </div>
+      <div class="phase-grid">
+        <div class="phase-row">
+          <div class="phase-label">Week 1</div>
+          <div class="phase-content">Scroll the For You Page for 20 minutes daily. Follow 2–3 mainstream creators in your niche. <strong>Do not post or message.</strong> Watch videos to at least 80% completion to build strong interest signals and let the algorithm learn your profile.</div>
+        </div>
+        <div class="phase-row">
+          <div class="phase-label">Week 1–2</div>
+          <div class="phase-content">Search hashtags and keywords matching your niche. Like 3 posts and leave one genuine, specific comment per day — not generic ("great video!"). Do not include links or @mentions in early comments.</div>
+        </div>
+        <div class="phase-row">
+          <div class="phase-label">Week 2+</div>
+          <div class="phase-content">Keep organic engagement to 5 likes and 2 comments daily. Begin posting your first TikTok — native vertical video, no watermarks from other platforms. Use 3–5 relevant hashtags. Light DMs can start Week 3: maximum 3–5 per day.</div>
+        </div>
+        <div class="phase-row">
+          <div class="phase-label">Pro Tip</div>
+          <div class="phase-content">TikTok detects device fingerprints aggressively. If running multiple accounts, use separate physical devices or a tool like <code>Multilogin</code> with distinct browser profiles. Never switch between accounts on the same device within minutes.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Meta -->
+    <div class="platform-block">
+      <div class="platform-head">
+        <div class="platform-icon icon-mt">M</div>
+        <span class="platform-name">Meta — Instagram & Facebook</span>
+      </div>
+      <div class="phase-grid">
+        <div class="phase-row">
+          <div class="phase-label">Week 1</div>
+          <div class="phase-content">Complete the profile fully: bio, profile photo, and link the Facebook Page to the Instagram Professional Account. Browse the feed for 15 minutes. Follow 5 relevant accounts per day. Like 3–5 posts. No DMs or Stories yet.</div>
+        </div>
+        <div class="phase-row">
+          <div class="phase-label">Week 2</div>
+          <div class="phase-content">Post 2 images or Reels per week. Start replying to comments on your own content. Begin engaging in the comments sections of niche creators. <strong>Do not send cold DMs yet.</strong></div>
+        </div>
+        <div class="phase-row">
+          <div class="phase-label">Week 3</div>
+          <div class="phase-content">Begin light outbound DMs — maximum 5 per day — to users who actively engage with your niche (commenters on popular posts). Space each DM at least 1–2 hours apart. Personalise every single message.</div>
+        </div>
+        <div class="phase-row">
+          <div class="phase-label">Pro Tip</div>
+          <div class="phase-content">Instagram tracks device fingerprints and login patterns. Use the official app (not third-party clients) for all warm-up activity. Avoid rapid login/logout across multiple accounts from one device.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- YouTube -->
+    <div class="platform-block">
+      <div class="platform-head">
+        <div class="platform-icon icon-yt">YT</div>
+        <span class="platform-name">YouTube</span>
+      </div>
+      <div class="phase-grid">
+        <div class="phase-row">
+          <div class="phase-label">Week 1</div>
+          <div class="phase-content">Watch 3–4 videos completely in your niche to build a watch history signal. Subscribe to 2 channels. Leave one thoughtful, specific comment on a popular video daily. <strong>Do not include links or mention your app.</strong></div>
+        </div>
+        <div class="phase-row">
+          <div class="phase-label">Week 2</div>
+          <div class="phase-content">Upload your first YouTube Short. Use natural language in the title and description — avoid keyword stuffing. Ensure the video file metadata has been stripped and renamed before upload (see Section 6). Add a channel banner and About section.</div>
+        </div>
+        <div class="phase-row">
+          <div class="phase-label">Week 3+</div>
+          <div class="phase-content">Upload 2–3 Shorts or 1 long-form video per week. Build towards 1,000 subscribers before adding external links in descriptions. Optimise for watch-time completion rate over raw view count.</div>
+        </div>
+        <div class="phase-row">
+          <div class="phase-label">Pro Tip</div>
+          <div class="phase-content">Verify your channel with a phone number early. Verified channels get higher upload limits and are less likely to be auto-flagged. Enable 2-factor authentication to signal account legitimacy to Google.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ─── 04 NICHE ─── -->
+  <section class="section" id="niche">
+    <div class="sec-head">
+      <span class="sec-num">04</span>
+      <h2 class="sec-title">Women's Health &amp; Nutrition Niche</h2>
+      <span class="sec-badge badge-orange">Niche-Specific</span>
+    </div>
+
+    <div class="callout callout-orange">
+      <p class="callout-label">// Why This Niche Requires Extra Care</p>
+      <p>Health and wellness is a regulated content category on all major platforms. Medical and dietary content is subject to automated policy enforcement. Accounts in this space are scrutinised more heavily and must build trust signals before platform systems treat them as legitimate.</p>
+    </div>
+
+    <div class="niche-grid">
+      <div class="niche-card">
+        <p class="niche-card-label">// Week 1 — Train the Algorithm</p>
+        <p>Search for and watch content from major fitness, diet, and wellness creators. Like and leave genuine, human-sounding comments on popular nutrition posts. Do not mention your app or product at this stage.</p>
+      </div>
+      <div class="niche-card">
+        <p class="niche-card-label">// First 14 Days — Keyword Avoidance</p>
+        <p>Avoid high-risk terms in bios, captions, and comments: <code>lose weight fast</code>, <code>diet pill</code>, <code>hormone balance</code>, <code>fat burner</code>, <code>guaranteed results</code>. These trigger automated health content reviews and can restrict new accounts immediately.</p>
+      </div>
+      <div class="niche-card">
+        <p class="niche-card-label">// Content-First Approach</p>
+        <p>Post educational, genuinely useful content — recipes, workout tips, nutrition explainers — before mentioning your app. Build credibility with the algorithm and real users before any promotional messaging begins.</p>
+      </div>
+      <div class="niche-card">
+        <p class="niche-card-label">// Compliance Framing</p>
+        <p>Frame health claims carefully. Use language like "may support," "some people find," or "speak to a healthcare professional." Avoid absolute claims. This protects against platform health-content flags and regulatory risk.</p>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ─── 05 FLAGS ─── -->
+  <section class="section" id="flags">
+    <div class="sec-head">
+      <span class="sec-num">05</span>
+      <h2 class="sec-title">Critical Flags to Avoid</h2>
+      <span class="sec-badge badge-red">Risk</span>
+    </div>
+
+    <div class="warn-box">
+      <p class="warn-title">The Link Spam Trap</p>
+      <p class="warn-body">Never put your app's download link in the bio of a brand-new account on Day 1. Platforms heavily weight links in new account bios as a spam signal. Wait until Week 2–3 minimum, after the account has organic engagement history.</p>
+    </div>
+
+    <div class="warn-box">
+      <p class="warn-title">Velocity Spikes</p>
+      <p class="warn-body">Do not create more than 2 accounts per day from the same physical location or network — even with proxies. Platform detection looks at account creation rates within IP ranges and geographic clusters, not just individual IPs.</p>
+    </div>
+
+    <div class="warn-box">
+      <p class="warn-title">The Clipboard Trap</p>
+      <p class="warn-body">When setting up profiles or writing captions, never copy and paste identical text across multiple accounts. Type with genuine variations. Platforms compare text similarity across accounts and flag clusters of near-identical profiles as coordinated inauthentic behaviour.</p>
+    </div>
+
+    <div class="warn-box">
+      <p class="warn-title">Device Fingerprint Clustering</p>
+      <p class="warn-body">Running multiple accounts from one device — even with separate logins — leaves device fingerprint trails (screen resolution, browser fonts, GPU signatures, hardware IDs). Use separate physical devices, or anti-detect browsers like <code>Multilogin</code> or <code>AdsPower</code> with isolated profiles per account.</p>
+    </div>
+
+    <div class="warn-box">
+      <p class="warn-title">Simultaneous Account Login</p>
+      <p class="warn-body">Switching rapidly between accounts on the same device signals that one operator controls multiple accounts. If multi-account management is necessary, switch sessions with a cooling period of at least 10–15 minutes, or use fully separate environments.</p>
+    </div>
+
+    <div class="warn-box">
+      <p class="warn-title">Uniform Posting Times</p>
+      <p class="warn-body">Posting at exactly the same time every day across multiple accounts is a classic bot signal. Introduce natural variation of ±30–60 minutes in your posting schedule. Humans are inconsistent — your accounts should appear the same way.</p>
+    </div>
+  </section>
+
+
+  <!-- ─── 06 METADATA ─── -->
+  <section class="section" id="metadata">
+    <div class="sec-head">
+      <span class="sec-num">06</span>
+      <h2 class="sec-title">AI Metadata &amp; File Hygiene</h2>
+      <span class="sec-badge badge-red">Critical</span>
+    </div>
+
+    <div class="callout callout-red">
+      <p class="callout-label">// The Hidden Risk of AI-Generated Content</p>
+      <p>Every image and video generated by AI tools contains hidden digital footprints: software name, creation timestamp, GPS data, model identifiers, and editing software signatures. Platforms can read this EXIF/metadata to flag AI-generated or coordinated content. Scrubbing this data before every upload is non-negotiable when operating multiple accounts.</p>
+    </div>
+
+    <div class="meta-row">
+      <div class="meta-card">
+        <p class="meta-card-title">Step 1 — Strip Metadata</p>
+        <p>Pass every AI-generated image or video through a metadata removal tool before uploading. Recommended: <code>ExifPurge</code> (Mac/Win, batch), <code>ExifTool</code> (CLI, most thorough), <code>Scrambled EXIF</code> (Android), <code>Metapho</code> (iOS). Removes camera model, software, location, and timestamp data.</p>
+      </div>
+      <div class="meta-card">
+        <p class="meta-card-title">Step 2 — Rename Every File</p>
+        <p>Never upload files with AI-tool naming patterns: <code>replicate-run-1234.mp4</code>, <code>Midjourney_Grid.png</code>, <code>dalle-output-003.jpg</code>. Rename to natural, descriptive phrases: <code>easy-high-protein-breakfast.mp4</code>, <code>morning-smoothie-bowl.jpg</code>.</p>
+      </div>
+    </div>
+
+    <div class="meta-row">
+      <div class="meta-card">
+        <p class="meta-card-title">Step 3 — Re-encode Video Files</p>
+        <p>Re-encode video through <code>HandBrake</code> or <code>FFmpeg</code> to strip embedded AI metadata at the codec level that basic EXIF tools miss. Vary codec settings slightly per account to avoid leaving a consistent encoding fingerprint.</p>
+      </div>
+      <div class="meta-card">
+        <p class="meta-card-title">Step 4 — Vary Editing Styles</p>
+        <p>Platforms can detect overlapping visual patterns (same colour grade, same transition timing, same audio levels) across accounts. Vary your editing template per account — different colour temperature, caption font, and background music track.</p>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ─── 07 CHECKLIST ─── -->
+  <section class="section" id="checklist">
+    <div class="sec-head">
+      <span class="sec-num">07</span>
+      <h2 class="sec-title">Daily Action Checklist</h2>
+      <span class="sec-badge badge-orange">Daily Ops</span>
+    </div>
+
+    <div class="callout callout-orange">
+      <p class="callout-label">// Execute in Order — Every Day During Warm-Up</p>
+      <ul class="checklist">
+        <li>
+          <div class="check-box"></div>
+          <span><strong>Feed scroll session (15 min).</strong> Watch 5–10 videos completely. Like 3 posts from outside your immediate niche — this signals broader, human-like interest rather than bot-like laser focus on one topic.</span>
+        </li>
+        <li>
+          <div class="check-box"></div>
+          <span><strong>Drop one genuine comment</strong> on a trending post within the women's health or wellness niche. Make it specific to the content — reference something actually in the video or post.</span>
+        </li>
+        <li>
+          <div class="check-box"></div>
+          <span><strong>Post your content (scheduled days only).</strong> Ensure the file has been metadata-stripped and renamed before uploading. Do not reuse the same file across multiple accounts.</span>
+        </li>
+        <li>
+          <div class="check-box"></div>
+          <span><strong>Reply to real comments manually.</strong> Respond to any comments left by real users on your content within the same day. Platform algorithms reward rapid, genuine responses with increased organic reach.</span>
+        </li>
+        <li>
+          <div class="check-box"></div>
+          <span><strong>Check email warm-up dashboard.</strong> Review sending stats, open rates, and spam folder placements. Adjust volume or cadence if open rate drops below 35%.</span>
+        </li>
+        <li>
+          <div class="check-box"></div>
+          <span><strong>Log all actions.</strong> Maintain a spreadsheet noting: date, platform, actions taken, DMs sent, engagement received. Track ramp-up velocity and spot anomalies before they become bans.</span>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+
+  <!-- ─── 08 ADDITIONAL ─── -->
+  <section class="section" id="added">
+    <div class="sec-head">
+      <span class="sec-num">08</span>
+      <h2 class="sec-title">Additional Best Practices</h2>
+      <span class="sec-badge badge-blue">Supplemental</span>
+    </div>
+
+    <div class="callout callout-blue">
+      <p class="callout-label">// What's Easily Missed</p>
+      <ul class="step-list">
+        <li><span class="step-arrow">→</span><span><strong>Enable 2FA on every account on Day 1.</strong> Two-factor authentication signals account legitimacy to platforms and protects warmed-up accounts from being compromised mid-campaign.</span></li>
+        <li><span class="step-arrow">→</span><span><strong>Use residential proxies, not data centre proxies.</strong> Data centre IPs (AWS, DigitalOcean, etc.) are pre-flagged across most platforms. Residential or mobile IPs from real ISPs produce dramatically fewer flags.</span></li>
+        <li><span class="step-arrow">→</span><span><strong>Build a social graph early.</strong> Follow back accounts that follow you. Accept follow requests. Interact with accounts that interact with you. A genuine follower graph with mutual follows is far harder for platforms to flag.</span></li>
+        <li><span class="step-arrow">→</span><span><strong>Vary your active hours.</strong> Human accounts show varied activity windows — sometimes morning, sometimes evening, with occasional gaps. Perfectly uniform 9-to-5 activity every day looks automated.</span></li>
+        <li><span class="step-arrow">→</span><span><strong>Never age accounts in complete silence.</strong> An account with zero activity for 30 days, followed by a sudden posting burst, is a known spam pattern. Maintain a low drumbeat of organic activity (1 like, 1 scroll session) even on off days.</span></li>
+        <li><span class="step-arrow">→</span><span><strong>Monitor for shadow bans proactively.</strong> Use incognito mode or a separate account to search your own username or hashtags you've used. If your content doesn't appear in results, reduce activity volume immediately and pause outreach for 48–72 hours.</span></li>
+        <li><span class="step-arrow">→</span><span><strong>Plan for account loss.</strong> Assume a percentage of accounts will be banned regardless of precautions. Always maintain a warm-up pipeline: new accounts 2–3 weeks behind your active ones, ready to activate when needed.</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <footer class="doc-footer">
+    <span>ACCOUNT WARM-UP PLAYBOOK // v1.0</span>
+    <span>CONFIDENTIAL — INTERNAL USE ONLY</span>
+  </footer>
+
+</div>
+
+<script>
+  const bar = document.getElementById('progress');
+  window.addEventListener('scroll', () => {
+    const pct = (document.documentElement.scrollTop /
+      (document.documentElement.scrollHeight - window.innerHeight)) * 100;
+    bar.style.width = pct + '%';
+  });
+</script>
+
+</body>
+</html>
