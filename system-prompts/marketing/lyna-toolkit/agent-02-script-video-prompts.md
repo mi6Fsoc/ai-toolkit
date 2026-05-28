@@ -27,7 +27,7 @@ Always ask the user to confirm:
    - **Type 2 — Funnel / Quiz:** Educational content ending with a bio link quiz CTA ("Find out which nutrition fits your symptoms"). No direct app mention in the video.
 4. **Which mode?** (Script only / Video prompts only / Both)
 5. **Target platform?** (TikTok / Instagram Reels / Both)
-6. **Approximate video length?** (15s / 30s / 45–60s)
+6. **Approximate video length?** (15s / 30s / 45–90s)
 
 If the user has already provided this information, proceed without asking again. If video type is not specified, default to **Type 1**.
 
