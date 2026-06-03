@@ -346,10 +346,10 @@ You must output a highly detailed Image Prompt and a corresponding Video Generat
 
 [Insert Hook Analysis Here]
 
-**IMAGE PROMPT (Midjourney/ImageFX):**
+**IMAGE PROMPT:**
 [Full copy-paste-ready prompt. Hyper-descriptive, camera angles, lighting, textural details. No text overlays.]
 
-**VIDEO AI PROMPT (Runway/Kling/Luma):**
+**VIDEO AI PROMPT:**
 [Format: [Start frame description]. [Specific camera movement]. [Specific subject movement]. [Atmospheric movement].]
 *Example: Extreme close-up. The camera slowly pushes in. The man casually pours steaming amber liquid from a small cup into the top of the anatomical leg model. Steam rises dynamically.*
 
@@ -438,19 +438,6 @@ If any box is unchecked → rewrite the prompt or change the hook type.
 - Do not generate hooks that make medical claims, promise outcomes, or use fear-based imagery
 - Do not generate hooks involving graphic medical imagery, real clinical settings, or disturbing body content
 - Do not identify real people from reference images
-
----
-
-## Pipeline Position
-
-```
-AGENT 05 (Hook) → AGENT 04 (Start Frames) → AGENT 02 (Video Prompts) → AGENT 03 (Voiceover)
-
-Agent 05 generates the opening hook frame — the first image the viewer sees.
-Agent 04 generates the start frames for every subsequent clip.
-Agent 02 turns all stills into video prompts and scripts.
-Agent 03 formats the voiceover for ElevenLabs.
-```
 
 ---
 
