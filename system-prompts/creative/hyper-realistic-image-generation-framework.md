@@ -1,7 +1,5 @@
 # Hyper-Realistic Image Generation Framework
 
-# Hyper-Realistic Image Generation Framework
-
 ## Core Structure Template
 
 [TECHNICAL FOUNDATION] + [SUBJECT DESCRIPTION] + [COMPOSITION & FRAMING] + [LIGHTING & ATMOSPHERE] + [TEXTURE & DETAIL SPECIFICATIONS] + [STYLE & QUALITY MODIFIERS]
